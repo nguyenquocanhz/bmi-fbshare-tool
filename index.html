@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="vi" class="scroll-smooth">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>BMI Calculator + Random FB Share | NQA TECH</title>
+  <meta name="description" content="Tính BMI chuẩn WHO, kiểm tra sơ bộ tiêu chuẩn nghĩa vụ quân sự, generator random link Facebook. Hỗ trợ Light/Dark/System/Auto mode.">
+  <link rel="icon" type="image/png" href="/img/nqatech.ico" />
+  <meta name="author" content="Nguyễn Quốc Anh" />
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    // Boot theme to avoid flash
+    (function () {
+      const saved = localStorage.getItem("theme-mode");
+      const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+      const mode = saved || "system";
+      const eff = mode === "auto"
+        ? ((new Date()).getHours() >= 6 && (new Date()).getHours() < 18 ? "light" : "dark")
+        : (mode === "system" ? (sysDark ? "dark" : "light") : mode);
+      if (eff === "dark") document.documentElement.classList.add("dark");
+    })();
+  </script>
+  <style>
+    .theme-icon { transition: transform .2s ease, opacity .2s ease; }
+    .theme-icon.hide { transform: scale(.8) rotate(-15deg); opacity: 0; }
+  </style>
+</head>
+<body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 text-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200">
+
+  <!-- ===== Navbar ===== -->
+  <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm dark:bg-slate-900/80 transition-transform duration-300">
+    <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
+      <div class="flex items-center gap-2">
+        <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">N</div>
+        <div>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight">NQA TECH</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 -mt-1">BMI & Tools Suite</p>
+        </div>
+      </div>
+
+      <nav class="flex items-center gap-1 text-sm font-medium mt-3 md:mt-0">
+        <a href="#bmi" class="px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">BMI</a>
+        <a href="#fbshare" class="px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">FB Share</a>
+        <a href="#faq" class="px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">FAQ</a>
+        <a href="https://nguyenquocanh.io.vn" target="_blank" class="ml-1 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow transition-all">Portfolio</a>
+
+        <!-- Theme Toggle (cycles: light → dark → system → auto) -->
+        <!-- <button id="themeToggle" class="ml-2 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800 transition flex items-center gap-2"
+                aria-label="Chuyển chế độ giao diện" title="Theme: System">
+          <span id="themeLabel" class="text-xs hidden sm:inline">System</span>
+          <span id="iconSun" class="theme-icon block dark:hidden" aria-hidden="true">🌞</span>
+          <span id="iconMoon" class="theme-icon hidden dark:block" aria-hidden="true">🌙</span>
+        </button> -->
+      </nav>
+    </div>
+  </header>
+
+  <!-- <section class="max-w-6xl mx-auto px-4 pt-6 pb-2">
+    <p class="text-slate-600 dark:text-slate-400">Full page responsive. Code sạch, chạy thẳng file HTML. Theme: Light / Dark / System / Auto theo giờ.</p>
+  </section> -->
+
+  <main class="max-w-6xl mx-auto px-4 pb-20 space-y-12">
+
+    <!-- ===== BMI SECTION ===== -->
+    <section id="bmi" class="grid lg:grid-cols-2 gap-8 items-start">
+      <!-- Calculator -->
+      <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 space-y-5">
+        <h2 class="text-xl font-semibold">BMI Calculator </h2>
+
+        <div class="flex justify-between bg-slate-100 dark:bg-slate-800 rounded-full p-1">
+          <label class="flex-1 text-center cursor-pointer">
+            <input type="radio" name="gender" value="male" class="hidden peer" checked>
+            <span class="peer-checked:bg-white dark:peer-checked:bg-slate-900 peer-checked:shadow rounded-full py-2 px-4 block font-medium peer-checked:text-blue-600">♂ Nam</span>
+          </label>
+          <label class="flex-1 text-center cursor-pointer">
+            <input type="radio" name="gender" value="female" class="hidden peer">
+            <span class="peer-checked:bg-white dark:peer-checked:bg-slate-900 peer-checked:shadow rounded-full py-2 px-4 block font-medium peer-checked:text-pink-600">♀ Nữ</span>
+          </label>
+        </div>
+
+        <div>
+          <label for="birthdate" class="block text-sm font-medium mb-1">Ngày sinh (dd/mm/yyyy, tuỳ chọn)</label>
+          <input id="birthdate" type="text" placeholder="dd/mm/yyyy"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+
+        <div>
+          <label for="weight" class="block text-sm font-medium mb-1">Cân nặng (kg)</label>
+          <input id="weight" type="number" inputmode="decimal" step="0.1" placeholder="VD: 65.5"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+
+        <div>
+          <label for="height" class="block text-sm font-medium mb-1">Chiều cao (cm)</label>
+          <input id="height" type="number" inputmode="numeric" step="0.1" placeholder="VD: 170"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+        </div>
+
+        <!-- Vision & medical -->
+        <div class="grid sm:grid-cols-2 gap-4">
+          <div>
+            <label for="myopia" class="block text-sm font-medium mb-1">Độ cận (diop)</label>
+            <input id="myopia" type="number" step="0.1" placeholder="VD: 1.25"
+                   class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+          </div>
+          <div>
+            <label for="astigmatism" class="block text-sm font-medium mb-1">Độ loạn thị (diop)</label>
+            <input id="astigmatism" type="number" step="0.1" placeholder="VD: 0.75"
+                   class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+          </div>
+        </div>
+
+        <div>
+          <label for="medicalHistory" class="block text-sm font-medium mb-1">Tiền sử bệnh lý</label>
+          <textarea id="medicalHistory" rows="2" placeholder="VD: hen suyễn, tim mạch, viêm gan B…"
+                    class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none"></textarea>
+        </div>
+
+        <button id="calculateBMI" class="w-full bg-blue-600 hover:bg-blue-700 text-white rounded-lg py-2.5 font-semibold transition-all">
+          Tính BMI
+        </button>
+
+        <!-- Kết quả chi tiết -->
+        <div id="resultCard" class="hidden mt-3 rounded-2xl bg-white dark:bg-slate-900 shadow p-5">
+          <h3 id="headlineBMI" class="text-2xl font-extrabold">
+            Chỉ số BMI của bạn là: <span id="headlineBMIValue" class="ml-1"></span>
+          </h3>
+
+          <!-- Thang màu + kim -->
+          <div class="mt-4 relative">
+            <div class="grid grid-cols-7 h-2 rounded-full overflow-hidden">
+              <div class="bg-yellow-400"></div> <!-- <16 -->
+              <div class="bg-yellow-300"></div> <!-- 16–16.9 -->
+              <div class="bg-yellow-200"></div> <!-- 17–18.4 -->
+              <div class="bg-green-500"></div>  <!-- 18.5–24.9 -->
+              <div class="bg-purple-300"></div> <!-- 25–29.9 -->
+              <div class="bg-purple-500"></div> <!-- 30–34.9 -->
+              <div class="bg-indigo-600"></div> <!-- >=35 -->
+            </div>
+            <div id="bmiNeedle" class="absolute -top-2 text-xl select-none" style="left:0">▲</div>
+          </div>
+
+          <hr class="my-5 border-slate-200 dark:border-slate-700">
+
+          <div class="grid sm:grid-cols-2 gap-4 text-sm">
+            <div>
+              <p class="text-slate-600 dark:text-slate-400">Tuổi của bạn:</p>
+              <p id="ageText" class="text-lg font-semibold"></p>
+
+              <p class="mt-3"><span class="font-semibold">Đánh giá:</span> <span id="evalText"></span></p>
+              <p id="bodyNote" class="mt-1 text-slate-600 dark:text-slate-400"></p>
+            </div>
+            <div class="text-right sm:text-right">
+              <p class="text-slate-600 dark:text-slate-400">Cân nặng lý tưởng dành cho bạn:</p>
+              <p id="idealWeight" class="text-lg font-extrabold text-green-600"></p>
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <p class="font-semibold mb-1">Lời khuyên:</p>
+            <ul id="adviceList" class="list-disc list-inside space-y-1 text-sm"></ul>
+          </div>
+        </div>
+      </div>
+
+      <!-- WHO + NVQS -->
+      <div class="space-y-6">
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6">
+          <h3 class="text-lg font-semibold mb-3">Tiêu chuẩn BMI người trưởng thành (WHO)</h3>
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm border border-slate-200 dark:border-slate-700 rounded-lg overflow-hidden">
+              <thead class="bg-slate-50 dark:bg-slate-800">
+                <tr><th class="text-left p-3 border-b dark:border-slate-700">Thang đo</th><th class="text-left p-3 border-b dark:border-slate-700">BMI – WHO (kg/m²)</th></tr>
+              </thead>
+              <tbody>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Gầy độ 3</td><td class="p-3">&lt; 16.0</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Gầy độ 2</td><td class="p-3">16.0 – 16.9</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Gầy độ 1</td><td class="p-3">17.0 – 18.4</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3 font-medium">Bình thường</td><td class="p-3 font-medium">18.5 – 24.9</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Tiền béo phì</td><td class="p-3">25.0 – 29.9</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Béo phì độ 1</td><td class="p-3">30.0 – 34.9</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Béo phì độ 2</td><td class="p-3">35.0 – 39.9</td></tr>
+                <tr class="odd:bg-white even:bg-slate-50 dark:odd:bg-slate-900 dark:even:bg-slate-800"><td class="p-3">Béo phì độ 3</td><td class="p-3">≥ 40.0</td></tr>
+              </tbody>
+            </table>
+          </div>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-3">“Độ cận” hiển thị ở kết quả: mặc định ±0.2 BMI để phản ánh sai số đo.</p>
+        </div>
+
+        <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6">
+          <h3 class="text-lg font-semibold mb-2">Tiêu chuẩn nghĩa vụ quân sự (VN) – tóm tắt</h3>
+          <ul class="list-disc list-inside space-y-2 text-sm">
+            <li>Chỉ số BMI <strong>18,0 – 29,9</strong> mới xét gọi nhập ngũ.</li>
+            <li>Phân loại sức khoẻ yêu cầu đạt <strong>loại 1, 2 hoặc 3</strong>.</li>
+            <li>Khúc xạ: cận &gt; <strong>1.5 diop</strong> hoặc loạn/viễn nặng: thường không đạt (kết luận bởi hội đồng khám).</li>
+          </ul>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Tóm tắt sàng lọc sơ bộ. Chuẩn chính thức phụ thuộc văn bản hiện hành & hội đồng khám.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- ===== FB SHARE GENERATOR ===== -->
+    <section id="fbshare" class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6">
+      <h2 class="text-xl font-semibold mb-4">Random Link Share Facebook (Mock)</h2>
+      <p class="text-slate-600 dark:text-slate-400 text-sm mb-4">Sinh link giả lập để test tool/QA. Mã luôn bắt đầu bằng ký tự <code>1</code>.</p>
+
+      <div class="grid md:grid-cols-2 gap-4">
+        <div>
+          <label class="block text-sm font-medium mb-1">Prefix</label>
+          <input id="prefix" type="text" value="https://www.facebook.com/share/p/"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Suffix</label>
+          <input id="suffix" type="text" value="/"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Số lượng</label>
+          <input id="count" type="number" min="1" max="10000" value="20"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div>
+          <label class="block text-sm font-medium mb-1">Độ dài mã</label>
+          <input id="length" type="number" min="3" max="64" value="10"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400">
+        </div>
+        <div class="md:col-span-2">
+          <label class="block text-sm font-medium mb-1">Bảng chữ cái (charset)</label>
+          <input id="charset" type="text" value="abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+                 class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400">
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-1">Có thể đổi charset. VD: <code>abcdefABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789</code></p>
+        </div>
+      </div>
+
+      <div class="flex flex-wrap gap-3 mt-4">
+        <button id="genLinks" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">Generate</button>
+        <button id="copyLinks" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-black text-white">Copy</button>
+        <button id="downloadLinks" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">Download .txt</button>
+        <span id="counter" class="text-sm text-slate-600 dark:text-slate-400 self-center hidden"></span>
+      </div>
+
+      <textarea id="linksOut" rows="10" class="w-full mt-4 font-mono text-sm border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-3" placeholder="Kết quả sẽ xuất hiện ở đây..."></textarea>
+      <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Gợi ý: mỗi dòng → <code>https://www.facebook.com/sharer/sharer.php?u=&lt;dòng&gt;</code>.</p>
+    </section>
+
+    <!-- ===== FAQ ===== -->
+    <section id="faq" class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6">
+      <h2 class="text-xl font-semibold mb-4">FAQ – Câu hỏi thường gặp</h2>
+      <div class="space-y-3">
+        <details class="group border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">
+            BMI có phụ thuộc giới tính không?
+            <span class="ml-4 text-slate-400 group-open:rotate-180 transition">▾</span>
+          </summary>
+          <div class="mt-2 text-sm leading-relaxed">
+            Công thức BMI không dùng giới tính; tuy nhiên diễn giải có khác do % mỡ cơ thể khác nhau giữa nam và nữ.
+          </div>
+        </details>
+
+        <details class="group border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">
+            Sai số đo ảnh hưởng thế nào?
+            <span class="ml-4 text-slate-400 group-open:rotate-180 transition">▾</span>
+          </summary>
+          <div class="mt-2 text-sm">Trang hiển thị “độ cận” mặc định ±0.2 BMI để phản ánh dao động do cân/chiều cao.</div>
+        </details>
+
+        <details class="group border border-slate-200 dark:border-slate-700 rounded-lg p-4">
+          <summary class="cursor-pointer font-medium flex items-center justify-between">
+            BMI bao nhiêu thì xét nghĩa vụ?
+            <span class="ml-4 text-slate-400 group-open:rotate-180 transition">▾</span>
+          </summary>
+          <div class="mt-2 text-sm">Sơ bộ: BMI 18,0–29,9 mới xét; cận &gt;1.5 diop hoặc bệnh lý đáng kể có thể không đạt. Kết luận chính thức do hội đồng khám.</div>
+        </details>
+      </div>
+    </section>
+  </main>
+
+  <footer class="text-center text-slate-500 dark:text-slate-400 text-sm pb-10">
+    © 2025 NQA TECH • Tailwind + Vanilla JS • Light/Dark/System/Auto
+  </footer>
+
+  <script>
+    // ===== THEME TOGGLE: Light / Dark / System / Auto =====
+    // const themeBtn = document.getElementById("themeToggle");
+    // const iconSun = document.getElementById("iconSun");
+    // const iconMoon = document.getElementById("iconMoon");
+    // const themeLabel = document.getElementById("themeLabel");
+    const birthdateInput = document.getElementById("birthdate");
+    // const modes = ["light", "dark", "system", "auto"];
+    let idx = 0;
+
+    // format bithday input
+    birthdateInput.addEventListener("input", (e) => {
+      let v = e.target.value.replace(/[^\d]/g, "").slice(0,8);
+      if (v.length >= 5) v = v.slice(0,2) + "/" + v.slice(2,4) + "/" + v.slice(4);
+      else if (v.length >= 3) v = v.slice(0,2) + "/" + v.slice(2);
+      e.target.value = v;
+    });
+    // function applyTheme(mode) {
+    //   const root = document.documentElement;
+    //   const hour = new Date().getHours();
+    //   const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
+    //   let eff = mode;
+    //   if (mode === "auto") eff = (hour >= 6 && hour < 18) ? "light" : "dark";
+    //   if (mode === "system") eff = sysDark ? "dark" : "light";
+    //   if (eff === "dark") { root.classList.add("dark"); iconSun.classList.add("hide"); iconMoon.classList.remove("hide"); }
+    //   else { root.classList.remove("dark"); iconMoon.classList.add("hide"); iconSun.classList.remove("hide"); }
+    //   setTimeout(()=>{ iconSun.classList.remove("hide"); iconMoon.classList.remove("hide"); }, 150);
+    //   localStorage.setItem("theme-mode", mode);
+    //   themeBtn.title = "Theme: " + mode[0].toUpperCase() + mode.slice(1);
+    //   themeLabel.textContent = mode[0].toUpperCase() + mode.slice(1);
+    // }
+    // function cycleTheme(){ idx = (idx + 1) % modes.length; applyTheme(modes[idx]); }
+    // themeBtn.addEventListener("click", cycleTheme);
+    // const savedMode = localStorage.getItem("theme-mode") || "system";
+    // idx = Math.max(0, modes.indexOf(savedMode));
+    // applyTheme(modes[idx]);
+    // window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
+    //   if ((localStorage.getItem("theme-mode") || "system") === "system") applyTheme("system");
+    // });
+
+    // ===== BMI HELPERS =====
+    const ERROR_DELTA = 0.2;
+    const $ = (id)=>document.getElementById(id);
+    function classifyWHO(bmi) {
+      if (bmi < 16) return {label: "Gầy độ 3", tone: "warn"};
+      if (bmi < 17) return {label: "Gầy độ 2", tone: "warn"};
+      if (bmi < 18.5) return {label: "Gầy độ 1", tone: "warn"};
+      if (bmi < 25) return {label: "Bình thường", tone: "ok"};
+      if (bmi < 30) return {label: "Tiền béo phì", tone: "mid"};
+      if (bmi < 35) return {label: "Béo phì độ 1", tone: "bad"};
+      if (bmi < 40) return {label: "Béo phì độ 2", tone: "bad"};
+      return {label: "Béo phì độ 3", tone: "bad"};
+    }
+    function healthTypeByBMI(bmi){
+      if (bmi >= 18.5 && bmi <= 24.9) return 1;
+      if (bmi >= 25.0 && bmi <= 26.9) return 2;
+      if (bmi >= 27.0 && bmi <= 29.9) return 3;
+      return null;
+    }
+    function toneClass(tone, eligible){
+      if(!eligible) return "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300";
+      if(tone === "ok") return "bg-green-100 text-green-800 dark:bg-green-900/40 dark:text-green-300";
+      if(tone === "mid") return "bg-orange-100 text-orange-800 dark:bg-orange-900/40 dark:text-orange-300";
+      if(tone === "warn") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300";
+      return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200";
+    }
+    function parseDOB(s){
+      const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((s||"").trim());
+      if(!m) return null;
+      const d = new Date(+m[3], +m[2]-1, +m[1]);
+      return isNaN(d) ? null : d;
+    }
+    function ageString(dob){
+      if(!dob) return "—";
+      const now = new Date();
+      let y = now.getFullYear()-dob.getFullYear();
+      let m = now.getMonth()-dob.getMonth();
+      if (now.getDate() < dob.getDate()) m--;
+      if (m < 0) { y--; m += 12; }
+      return `${y} tuổi ${m} tháng`;
+    }
+    function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
+    function mapBMIToPercent(bmi){ return (clamp(bmi,10,40)-10)/(40-10)*100; }
+    function clsWHO2(bmi){
+      if (bmi < 16) return {label:"Gầy độ 3", note:"Thiếu năng lượng nghiêm trọng", color:"text-yellow-500"};
+      if (bmi < 17) return {label:"Gầy độ 2", note:"Thiếu năng lượng vừa", color:"text-yellow-500"};
+      if (bmi < 18.5) return {label:"Gầy độ 1", note:"Thiếu năng lượng nhẹ", color:"text-yellow-500"};
+      if (bmi < 25) return {label:"Bình thường", note:"Cơ thể phát triển cân đối", color:"text-green-600"};
+      if (bmi < 30) return {label:"Tiền béo phì", note:"Nên kiểm soát mỡ cơ thể", color:"text-purple-500"};
+      if (bmi < 35) return {label:"Béo phì độ 1", note:"Tăng nguy cơ chuyển hoá", color:"text-purple-600"};
+      if (bmi < 40) return {label:"Béo phì độ 2", note:"Nguy cơ cao", color:"text-purple-700"};
+      return {label:"Béo phì độ 3", note:"Nguy cơ rất cao", color:"text-indigo-700"};
+    }
+    function idealWeightRangeKg(h){ return [18.5*h*h, 24.9*h*h]; }
+    function adviceList(label){
+      return [
+        "<strong>Duy trì chế độ dinh dưỡng cân bằng:</strong> Ăn đa dạng, đủ đạm, chất béo lành mạnh, vitamin & khoáng.",
+        "<strong>Tăng cường vận động thể chất:</strong> Ít nhất 150 phút/tuần mức vừa hoặc 75 phút/tuần mức mạnh.",
+        "<strong>Theo dõi sức khoẻ định kỳ:</strong> Khám định kỳ để phát hiện sớm vấn đề & điều chỉnh kịp thời."
+      ];
+    }
+
+    // Calculate handler
+    $("calculateBMI").addEventListener("click", () => {
+      const w = parseFloat($("weight").value);
+      const hcm = parseFloat($("height").value);
+      if (!w || !hcm) { alert("Nhập đủ cân nặng & chiều cao."); return; }
+      const h = hcm / 100;
+      if (h <= 0) { alert("Chiều cao không hợp lệ."); return; }
+
+      const myopia = parseFloat($("myopia").value) || 0;
+      const astig = parseFloat($("astigmatism").value) || 0;
+      const history = ($("medicalHistory").value || "").trim();
+
+      const bmi = w / (h*h);
+      const bmiRounded = Math.round(bmi * 10) / 10;
+
+      // Eligibility sơ bộ NVQS
+      let eligible = true; const reasons = [];
+      if (bmiRounded < 18.0 || bmiRounded > 29.9) { eligible = false; reasons.push("BMI ngoài 18.0–29.9"); }
+      if (myopia > 1.5) { eligible = false; reasons.push("Cận > 1.5 diop"); }
+      if (astig > 1.0) { eligible = false; reasons.push("Loạn thị > 1.0 diop"); }
+      if (history.length > 0) { eligible = false; reasons.push("Có tiền sử bệnh lý (cần khám chuyên khoa)"); }
+
+      const whoMain = classifyWHO(bmiRounded);
+      const who = clsWHO2(bmiRounded);
+      const low = (bmiRounded - ERROR_DELTA).toFixed(1);
+      const high = (bmiRounded + ERROR_DELTA).toFixed(1);
+
+      // Headline + color
+      $("headlineBMIValue").textContent = bmiRounded.toFixed(1);
+      $("headlineBMIValue").className = who.color;
+
+      // Needle
+      $("bmiNeedle").style.left = `calc(${mapBMIToPercent(bmiRounded)}% - 8px)`;
+
+      // Age
+      const dob = parseDOB($("birthdate").value);
+      $("ageText").textContent = ageString(dob);
+
+      // Eval & note
+      $("evalText").textContent = `Chỉ số BMI ${who.label.toLowerCase()}`;
+      $("bodyNote").textContent = who.note;
+
+      // Ideal weight range
+      const [wMin, wMax] = idealWeightRangeKg(h);
+      $("idealWeight").innerHTML = `${wMin.toFixed(1)}(kg) - ${wMax.toFixed(1)}(kg)`;
+
+      // Advice
+      $("adviceList").innerHTML = adviceList(who.label).map(x=>`<li>${x}</li>`).join("");
+
+      // Also show range (độ cận) bên dưới headline (optional)
+      // Append to bodyNote if muốn:
+      $("bodyNote").innerHTML += ` <span class="block mt-1 text-xs opacity-80">Độ cận: [${low}, ${high}]</span>`;
+
+      // Color card theo eligibility
+      $("resultCard").className = `mt-3 rounded-2xl shadow p-5 ${toneClass(whoMain.tone, eligible)} bg-white dark:bg-slate-900`;
+      $("resultCard").classList.remove("hidden");
+    });
+
+    // ===== FB SHARE GENERATOR =====
+    function randomString(len, alphabet){
+      let res = "1"; // bắt đầu bằng '1'
+      const n = alphabet.length;
+      for(let i = 1; i < len; i++){
+        res += alphabet.charAt(Math.floor(Math.random()*n));
+      }
+      return res;
+    }
+    function genLinks(){
+      const prefix = $("prefix").value || "";
+      const suffix = $("suffix").value ?? "";
+      const count = Math.max(1, Math.min(10000, parseInt($("count").value || "1", 10)));
+      const length = Math.max(3, Math.min(64, parseInt($("length").value || "10", 10)));
+      const charset = $("charset").value || "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
+      const out = [];
+      for(let i=0;i<count;i++){ out.push(prefix + randomString(length, charset) + suffix); }
+      $("linksOut").value = out.join("\n");
+      $("counter").textContent = `Đã tạo ${out.length} link`;
+      $("counter").classList.remove("hidden");
+    }
+    function copyLinks(){ const ta = $("linksOut"); ta.select(); ta.setSelectionRange(0, 999999); document.execCommand("copy"); }
+    function downloadLinks(){
+      const blob = new Blob([$("linksOut").value || ""], {type: "text/plain;charset=utf-8"});
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `fb_share_links_${Date.now()}.txt`;
+      document.body.appendChild(a); a.click(); a.remove(); URL.revokeObjectURL(a.href);
+    }
+    $("genLinks").addEventListener("click", genLinks);
+    $("copyLinks").addEventListener("click", copyLinks);
+    $("downloadLinks").addEventListener("click", downloadLinks);
+
+    // Hide navbar on scroll down (optional)
+    let lastY = window.scrollY; const header = document.querySelector("header");
+    window.addEventListener("scroll", () => {
+      if (window.scrollY > lastY && window.scrollY > 80) header.classList.add("-translate-y-full");
+      else header.classList.remove("-translate-y-full");
+      lastY = window.scrollY;
+    });
+  </script>
+</body>
+</html>
