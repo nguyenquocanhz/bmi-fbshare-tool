@@ -9,21 +9,20 @@
   <meta name="author" content="Nguyễn Quốc Anh" />
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
-    // Boot theme to avoid flash
+    // Boot theme để tránh flash
     (function () {
-      const saved = localStorage.getItem("theme-mode");
+      const saved = localStorage.getItem("theme-mode") || "system";
       const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-      const mode = saved || "system";
       const now = new Date();
-      const eff = mode === "auto"
+      const eff = saved === "auto"
         ? (now.getHours() >= 6 && now.getHours() < 18 ? "light" : "dark")
-        : (mode === "system" ? (sysDark ? "dark" : "light") : mode);
+        : (saved === "system" ? (sysDark ? "dark" : "light") : saved);
       if (eff === "dark") document.documentElement.classList.add("dark");
     })();
   </script>
   <style>
-    .theme-icon { transition: transform .2s ease, opacity .2s ease; }
-    .theme-icon.hide { transform: scale(.8) rotate(-15deg); opacity: 0; }
+    .field-err { display:none; }
+    .field-err.show { display:block; }
   </style>
 </head>
 <body class="min-h-screen bg-gradient-to-br from-blue-50 to-blue-100 text-slate-800 dark:from-slate-900 dark:to-slate-950 dark:text-slate-200">
@@ -31,29 +30,19 @@
   <!-- ===== Navbar ===== -->
   <header class="sticky top-0 z-50 bg-white/90 backdrop-blur-md shadow-sm dark:bg-slate-900/80 transition-transform duration-300">
     <div class="max-w-6xl mx-auto px-4 py-3 flex flex-wrap items-center justify-between">
-      <div class="flex items-center gap-2">
+      <a href="/" class="flex items-center gap-2" aria-label="NQA TECH — Home">
         <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">N</div>
         <div>
-          <h1 class="text-xl md:text-2xl font-bold tracking-tight"><a href="/">NQA TECH</a></h1>
-          <p class="text-xs text-slate-500 dark:text-slate-400 -mt-1">BMI & Tools Suite</p>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight">NQA TECH</h1>
+          <p class="text-xs text-slate-500 dark:text-slate-400 -mt-1">BMI &amp; Tools Suite</p>
         </div>
-      </div>
+      </a>
 
       <nav class="flex items-center gap-1 text-sm font-medium mt-3 md:mt-0">
         <a href="#bmi" class="px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">BMI</a>
         <a href="#fbshare" class="px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">FB Share</a>
         <a href="#faq" class="px-3 py-2 rounded-lg hover:bg-blue-100 hover:text-blue-700 text-slate-700 dark:text-slate-200 dark:hover:bg-slate-800 transition-all">FAQ</a>
         <a href="https://nguyenquocanh.io.vn" target="_blank" class="ml-1 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow transition-all">Portfolio</a>
-
-        <!-- Theme Toggle (cycles: light → dark → system → auto) -->
-        <!--
-        <button id="themeToggle" class="ml-2 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800 transition flex items-center gap-2"
-                aria-label="Chuyển chế độ giao diện" title="Theme: System">
-          <span id="themeLabel" class="text-xs hidden sm:inline">System</span>
-          <span id="iconSun" class="theme-icon block dark:hidden" aria-hidden="true">🌞</span>
-          <span id="iconMoon" class="theme-icon hidden dark:block" aria-hidden="true">🌙</span>
-        </button>
-        -->
       </nav>
     </div>
   </header>
@@ -80,21 +69,25 @@
         <!-- DOB + error -->
         <div>
           <label for="birthdate" class="block text-sm font-medium mb-1">Ngày sinh (dd/mm/yyyy, tuỳ chọn)</label>
-          <input id="birthdate" type="text" placeholder="dd/mm/yyyy"
+          <input id="birthdate" type="text" placeholder="dd/mm/yyyy" inputmode="numeric" pattern="\d{2}/\d{2}/\d{4}"
                  class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
-          <p id="birthdateError" class="mt-1 text-sm text-red-600 hidden">Ngày sinh không hợp lệ.</p>
+          <p id="birthdateError" class="field-err mt-1 text-sm text-red-600">Ngày sinh không hợp lệ.</p>
         </div>
 
         <div>
           <label for="weight" class="block text-sm font-medium mb-1">Cân nặng (kg)</label>
           <input id="weight" type="number" inputmode="decimal" step="0.1" placeholder="VD: 65.5"
+                 min="1" max="200"
                  class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+          <p id="weightError" class="field-err mt-1 text-sm text-red-600">Cân nặng phải trong khoảng 1–200 kg.</p>
         </div>
 
         <div>
           <label for="height" class="block text-sm font-medium mb-1">Chiều cao (cm)</label>
           <input id="height" type="number" inputmode="numeric" step="0.1" placeholder="VD: 170"
+                 min="1" max="200"
                  class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+          <p id="heightError" class="field-err mt-1 text-sm text-red-600">Chiều cao phải trong khoảng 1–200 cm.</p>
         </div>
 
         <!-- Vision & medical -->
@@ -102,12 +95,16 @@
           <div>
             <label for="myopia" class="block text-sm font-medium mb-1">Độ cận (diop)</label>
             <input id="myopia" type="number" step="0.1" placeholder="VD: 1.25"
+                   min="0" max="10"
                    class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+            <p id="myopiaError" class="field-err mt-1 text-sm text-red-600">Độ cận phải trong khoảng 0–10 diop.</p>
           </div>
           <div>
             <label for="astigmatism" class="block text-sm font-medium mb-1">Độ loạn thị (diop)</label>
             <input id="astigmatism" type="number" step="0.1" placeholder="VD: 0.75"
+                   min="0" max="10"
                    class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+            <p id="astigError" class="field-err mt-1 text-sm text-red-600">Độ loạn phải trong khoảng 0–10 diop.</p>
           </div>
         </div>
 
@@ -195,7 +192,7 @@
             <li>Phân loại sức khoẻ yêu cầu đạt <strong>loại 1, 2 hoặc 3</strong>.</li>
             <li>Khúc xạ: cận &gt; <strong>1.5 diop</strong> hoặc loạn/viễn nặng: thường không đạt (kết luận bởi hội đồng khám).</li>
           </ul>
-          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Tóm tắt sàng lọc sơ bộ. Chuẩn chính thức phụ thuộc văn bản hiện hành & hội đồng khám.</p>
+          <p class="text-xs text-slate-500 dark:text-slate-400 mt-2">Sàng lọc tham khảo; quyết định cuối cùng bởi Hội đồng khám.</p>
         </div>
       </div>
     </section>
@@ -284,35 +281,34 @@
   </footer>
 
   <script>
-    // ===== CONSTANTS =====
-    const ALLOWED_MIN_YEAR = 1950;
+    // ====== CONSTANTS ======
+    const ALLOWED_MIN_YEAR = 1998;
     const ALLOWED_MAX_YEAR = 2010;
-    const MAX_AGE = 26; // yêu cầu: tuổi ≤ 26
+    const MAX_AGE = 26;       // tuổi ≤ 26
+    const ERROR_DELTA = 0.2;  // “độ cận” BMI ±0.2
 
-    // ===== UTILS =====
+    // ====== HELPERS ======
     const $ = (id) => document.getElementById(id);
 
-    // ===== CLEAR LINKS BUTTON =====
-    const clearLinksButton = $("clearLinks");
-    clearLinksButton.addEventListener("click", () => {
-      $("linksOut").value = "";
-      $("counter").classList.add("hidden");
-    });
-
-    // ===== DOB FORMAT + VALIDATE =====
-    const birthdateInput = $("birthdate");
-    const birthdateError = $("birthdateError");
-
-    function setBirthdateError(msg) {
+    function showErr(el, msg) {
+      const p = $(el.id + "Error");
+      if (!p) return;
       if (msg) {
-        birthdateError.textContent = msg;
-        birthdateError.classList.remove("hidden");
-        birthdateInput.classList.add("border-red-500", "focus:ring-red-500");
+        p.textContent = msg;
+        p.classList.add("show");
+        el.classList.add("border-red-500", "focus:ring-red-500");
       } else {
-        birthdateError.classList.add("hidden");
-        birthdateInput.classList.remove("border-red-500", "focus:ring-red-500");
+        p.classList.remove("show");
+        el.classList.remove("border-red-500", "focus:ring-red-500");
       }
     }
+
+    function inRange(val, min, max) {
+      return typeof val === "number" && !Number.isNaN(val) && val >= min && val <= max;
+    }
+
+    // ====== DOB PARSE & VALIDATION ======
+    const birthdateInput = $("birthdate");
 
     function parseDOB_ddmmyyyy(s) {
       const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((s || "").trim());
@@ -322,14 +318,11 @@
       const M = parseInt(m[2], 10) - 1;
       const Y = parseInt(m[3], 10);
 
-      // Năm sinh phải trong [1998..2010]
       if (Y < ALLOWED_MIN_YEAR || Y > ALLOWED_MAX_YEAR) return null;
 
       const dt = new Date(Y, M, d);
-      // Ngày-tháng hợp lệ
-      if (dt.getFullYear() !== Y || dt.getMonth() !== M || dt.getDate() !== d) return null;
-      // Không cho ngày tương lai
-      if (dt > new Date()) return null;
+      if (dt.getFullYear() !== Y || dt.getMonth() !== M || dt.getDate() !== d) return null; // ngày-tháng hợp lệ
+      if (dt > new Date()) return null; // không cho ngày tương lai
 
       return dt;
     }
@@ -343,38 +336,37 @@
       return y;
     }
 
-    function validateBirthdateRange() {
+    function validateBirthdate() {
       const raw = birthdateInput.value.trim();
-      if (!raw) { // DOB không bắt buộc; nếu muốn bắt buộc, đổi block này
-        setBirthdateError("");
+      if (!raw) { // DOB không bắt buộc
+        showErr(birthdateInput, "");
         return true;
       }
       const dob = parseDOB_ddmmyyyy(raw);
       if (!dob) {
-        setBirthdateError(`Ngày sinh không hợp lệ hoặc ngoài khoảng năm ${ALLOWED_MIN_YEAR}–${ALLOWED_MAX_YEAR}.`);
+        showErr(birthdateInput, `Ngày sinh không hợp lệ hoặc ngoài khoảng năm ${ALLOWED_MIN_YEAR}–${ALLOWED_MAX_YEAR}.`);
         return false;
       }
       const age = ageYears(dob);
       if (age > MAX_AGE) {
-        setBirthdateError(`Tuổi phải ≤ ${MAX_AGE}.`);
+        showErr(birthdateInput, `Tuổi phải ≤ ${MAX_AGE}.`);
         return false;
       }
-      setBirthdateError("");
+      showErr(birthdateInput, "");
       return true;
     }
 
-    // format birthday input → dd/mm/yyyy
+    // Formatter DOB → dd/mm/yyyy
     birthdateInput.addEventListener("input", (e) => {
       let v = e.target.value.replace(/[^\d]/g, "").slice(0, 8);
       if (v.length >= 5) v = v.slice(0, 2) + "/" + v.slice(2, 4) + "/" + v.slice(4);
       else if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2);
       e.target.value = v;
-      if (v.length === 10) validateBirthdateRange();
+      if (v.length === 10) validateBirthdate();
     });
-    birthdateInput.addEventListener("blur", validateBirthdateRange);
+    birthdateInput.addEventListener("blur", validateBirthdate);
 
-    // ===== BMI HELPERS =====
-    const ERROR_DELTA = 0.2;
+    // ====== BMI UTIL ======
     function classifyWHO(bmi) {
       if (bmi < 16) return {label: "Gầy độ 3", tone: "warn"};
       if (bmi < 17) return {label: "Gầy độ 2", tone: "warn"};
@@ -385,11 +377,25 @@
       if (bmi < 40) return {label: "Béo phì độ 2", tone: "bad"};
       return {label: "Béo phì độ 3", tone: "bad"};
     }
-    function healthTypeByBMI(bmi){
-      if (bmi >= 18.5 && bmi <= 24.9) return 1;
-      if (bmi >= 25.0 && bmi <= 26.9) return 2;
-      if (bmi >= 27.0 && bmi <= 29.9) return 3;
-      return null;
+    function clsWHO2(bmi){
+      if (bmi < 16) return {label:"Gầy độ 3", note:"Thiếu năng lượng nghiêm trọng", color:"text-yellow-500"};
+      if (bmi < 17) return {label:"Gầy độ 2", note:"Thiếu năng lượng vừa", color:"text-yellow-500"};
+      if (bmi < 18.5) return {label:"Gầy độ 1", note:"Thiếu năng lượng nhẹ", color:"text-yellow-500"};
+      if (bmi < 25) return {label:"Bình thường", note:"Cơ thể phát triển cân đối", color:"text-green-600"};
+      if (bmi < 30) return {label:"Tiền béo phì", note:"Nên kiểm soát mỡ cơ thể", color:"text-purple-500"};
+      if (bmi < 35) return {label:"Béo phì độ 1", note:"Tăng nguy cơ chuyển hoá", color:"text-purple-600"};
+      if (bmi < 40) return {label:"Béo phì độ 2", note:"Nguy cơ cao", color:"text-purple-700"};
+      return {label:"Béo phì độ 3", note:"Nguy cơ rất cao", color:"text-indigo-700"};
+    }
+    function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
+    function mapBMIToPercent(bmi){ return (clamp(bmi,10,40)-10)/(40-10)*100; }
+    function idealWeightRangeKg(h){ return [18.5*h*h, 24.9*h*h]; }
+    function adviceList(){
+      return [
+        "<strong>Duy trì chế độ dinh dưỡng cân bằng:</strong> Ăn đa dạng, đủ đạm, chất béo lành mạnh, vitamin & khoáng.",
+        "<strong>Tăng cường vận động thể chất:</strong> Ít nhất 150 phút/tuần mức vừa hoặc 75 phút/tuần mức mạnh.",
+        "<strong>Theo dõi sức khoẻ định kỳ:</strong> Khám định kỳ để phát hiện sớm vấn đề & điều chỉnh kịp thời."
+      ];
     }
     function toneClass(tone, eligible){
       if(!eligible) return "bg-red-100 text-red-800 dark:bg-red-900/40 dark:text-red-300";
@@ -398,7 +404,7 @@
       if(tone === "warn") return "bg-yellow-100 text-yellow-800 dark:bg-yellow-900/40 dark:text-yellow-300";
       return "bg-slate-100 text-slate-800 dark:bg-slate-800 dark:text-slate-200";
     }
-    function parseDOB(s){
+    function parseDOBLoose(s){
       const m = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec((s||"").trim());
       if(!m) return null;
       const d = new Date(+m[3], +m[2]-1, +m[1]);
@@ -413,43 +419,51 @@
       if (m < 0) { y--; m += 12; }
       return `${y} tuổi ${m} tháng`;
     }
-    function clamp(x,min,max){ return Math.max(min, Math.min(max, x)); }
-    function mapBMIToPercent(bmi){ return (clamp(bmi,10,40)-10)/(40-10)*100; }
-    function clsWHO2(bmi){
-      if (bmi < 16) return {label:"Gầy độ 3", note:"Thiếu năng lượng nghiêm trọng", color:"text-yellow-500"};
-      if (bmi < 17) return {label:"Gầy độ 2", note:"Thiếu năng lượng vừa", color:"text-yellow-500"};
-      if (bmi < 18.5) return {label:"Gầy độ 1", note:"Thiếu năng lượng nhẹ", color:"text-yellow-500"};
-      if (bmi < 25) return {label:"Bình thường", note:"Cơ thể phát triển cân đối", color:"text-green-600"};
-      if (bmi < 30) return {label:"Tiền béo phì", note:"Nên kiểm soát mỡ cơ thể", color:"text-purple-500"};
-      if (bmi < 35) return {label:"Béo phì độ 1", note:"Tăng nguy cơ chuyển hoá", color:"text-purple-600"};
-      if (bmi < 40) return {label:"Béo phì độ 2", note:"Nguy cơ cao", color:"text-purple-700"};
-      return {label:"Béo phì độ 3", note:"Nguy cơ rất cao", color:"text-indigo-700"};
-    }
-    function idealWeightRangeKg(h){ return [18.5*h*h, 24.9*h*h]; }
-    function adviceList(label){
-      return [
-        "<strong>Duy trì chế độ dinh dưỡng cân bằng:</strong> Ăn đa dạng, đủ đạm, chất béo lành mạnh, vitamin & khoáng.",
-        "<strong>Tăng cường vận động thể chất:</strong> Ít nhất 150 phút/tuần mức vừa hoặc 75 phút/tuần mức mạnh.",
-        "<strong>Theo dõi sức khoẻ định kỳ:</strong> Khám định kỳ để phát hiện sớm vấn đề & điều chỉnh kịp thời."
-      ];
-    }
 
-    // ===== Calculate handler =====
-    $("calculateBMI").addEventListener("click", () => {
-      // DOB validate (cho phép trống; nếu có thì phải hợp lệ)
-      if (!validateBirthdateRange()) {
-        birthdateInput.focus();
-        return;
+    // ====== INPUT VALIDATION (weight/height/myopia/astig) ======
+    const wEl = $("weight");
+    const hEl = $("height");
+    const myEl = $("myopia");
+    const asEl = $("astigmatism");
+
+    function validateNumber(el, min, max, allowEmpty=false, label="Giá trị") {
+      const raw = (el.value || "").trim();
+      if (allowEmpty && raw === "") { showErr(el, ""); return true; }
+      const v = parseFloat(raw);
+      if (!inRange(v, min, max)) {
+        const msg = `${label} phải trong khoảng ${min}–${max}${label.includes("diop")?" diop":""}${label.includes("cm")?" cm":label.includes("kg")?" kg":""}.`;
+        showErr(el, msg);
+        return false;
       }
+      showErr(el, "");
+      return true;
+    }
 
-      const w = parseFloat($("weight").value);
-      const hcm = parseFloat($("height").value);
-      if (!w || !hcm) { alert("Nhập đủ cân nặng & chiều cao."); return; }
+    function attachRealtimeValidation() {
+      wEl.addEventListener("input", ()=>validateNumber(wEl, 1, 200, false, "Cân nặng (kg)"));
+      hEl.addEventListener("input", ()=>validateNumber(hEl, 1, 200, false, "Chiều cao (cm)"));
+      myEl.addEventListener("input", ()=>validateNumber(myEl, 0, 10,  true, "Độ cận (diop)"));
+      asEl.addEventListener("input", ()=>validateNumber(asEl, 0, 10,  true, "Độ loạn (diop)"));
+    }
+    attachRealtimeValidation();
+
+    // ====== CALCULATE HANDLER ======
+    $("calculateBMI").addEventListener("click", () => {
+      // DOB (không bắt buộc, nhưng nếu có phải hợp lệ)
+      if (!validateBirthdate()) { birthdateInput.focus(); return; }
+
+      const okW  = validateNumber(wEl, 1, 200, false, "Cân nặng (kg)");
+      const okH  = validateNumber(hEl, 1, 200, false, "Chiều cao (cm)");
+      const okMy = validateNumber(myEl, 0, 10, true,  "Độ cận (diop)");
+      const okAs = validateNumber(asEl, 0, 10, true,  "Độ loạn (diop)");
+      if (!(okW && okH && okMy && okAs)) return;
+
+      const w = parseFloat(wEl.value);
+      const hcm = parseFloat(hEl.value);
       const h = hcm / 100;
-      if (h <= 0) { alert("Chiều cao không hợp lệ."); return; }
 
-      const myopia = parseFloat($("myopia").value) || 0;
-      const astig = parseFloat($("astigmatism").value) || 0;
+      const myopia = myEl.value.trim() === "" ? 0 : parseFloat(myEl.value);
+      const astig  = asEl.value.trim() === "" ? 0 : parseFloat(asEl.value);
       const history = ($("medicalHistory").value || "").trim();
 
       const bmi = w / (h*h);
@@ -459,7 +473,7 @@
       let eligible = true; const reasons = [];
       if (bmiRounded < 18.0 || bmiRounded > 29.9) { eligible = false; reasons.push("BMI ngoài 18.0–29.9"); }
       if (myopia > 1.5) { eligible = false; reasons.push("Cận > 1.5 diop"); }
-      if (astig > 1.0) { eligible = false; reasons.push("Loạn thị > 1.0 diop"); }
+      if (astig > 1.0)  { eligible = false; reasons.push("Loạn thị > 1.0 diop"); }
       if (history.length > 0) { eligible = false; reasons.push("Có tiền sử bệnh lý (cần khám chuyên khoa)"); }
 
       const whoMain = classifyWHO(bmiRounded);
@@ -474,9 +488,9 @@
       // Needle
       $("bmiNeedle").style.left = `calc(${mapBMIToPercent(bmiRounded)}% - 8px)`;
 
-      // Age text (chỉ hiển thị nếu parse được)
-      const dob = parseDOB($("birthdate").value);
-      $("ageText").textContent = ageString(dob);
+      // Age (hiển thị mềm, dùng parse “loose” để chỉ hiển thị)
+      const dobLoose = parseDOBLoose($("birthdate").value);
+      $("ageText").textContent = ageString(dobLoose);
 
       // Eval & note
       $("evalText").textContent = `Chỉ số BMI ${who.label.toLowerCase()}`;
@@ -486,20 +500,18 @@
       const [wMin, wMax] = idealWeightRangeKg(h);
       $("idealWeight").innerHTML = `${wMin.toFixed(1)}(kg) - ${wMax.toFixed(1)}(kg)`;
 
-      // Advice
-      $("adviceList").innerHTML = adviceList(who.label).map(x=>`<li>${x}</li>`).join("");
-
-      // Độ cận BMI
+      // Advice + “độ cận” BMI
+      $("adviceList").innerHTML = adviceList().map(x=>`<li>${x}</li>`).join("");
       $("bodyNote").innerHTML += ` <span class="block mt-1 text-xs opacity-80">Độ cận: [${low}, ${high}]</span>`;
 
-      // Color card theo eligibility
+      // Màu card theo eligibility
       $("resultCard").className = `mt-3 rounded-2xl shadow p-5 ${toneClass(whoMain.tone, eligible)} bg-white dark:bg-slate-900`;
       $("resultCard").classList.remove("hidden");
     });
 
-    // ===== FB SHARE GENERATOR =====
+    // ====== FB SHARE GENERATOR ======
     function randomString(len, alphabet){
-      let res = "1"; // bắt đầu bằng '1'
+      let res = "1"; // luôn bắt đầu '1'
       const n = alphabet.length;
       for(let i = 1; i < len; i++){
         res += alphabet.charAt(Math.floor(Math.random()*n));
@@ -529,8 +541,9 @@
     $("genLinks").addEventListener("click", genLinks);
     $("copyLinks").addEventListener("click", copyLinks);
     $("downloadLinks").addEventListener("click", downloadLinks);
+    $("clearLinks").addEventListener("click", () => { $("linksOut").value = ""; $("counter").classList.add("hidden"); });
 
-    // Hide navbar on scroll down (optional)
+    // ====== Hide navbar on scroll down (optional) ======
     let lastY = window.scrollY; const header = document.querySelector("header");
     window.addEventListener("scroll", () => {
       if (window.scrollY > lastY && window.scrollY > 80) header.classList.add("-translate-y-full");
