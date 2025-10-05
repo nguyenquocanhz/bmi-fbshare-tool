@@ -14,8 +14,9 @@
       const saved = localStorage.getItem("theme-mode");
       const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
       const mode = saved || "system";
+      const now = new Date();
       const eff = mode === "auto"
-        ? ((new Date()).getHours() >= 6 && (new Date()).getHours() < 18 ? "light" : "dark")
+        ? (now.getHours() >= 6 && now.getHours() < 18 ? "light" : "dark")
         : (mode === "system" ? (sysDark ? "dark" : "light") : mode);
       if (eff === "dark") document.documentElement.classList.add("dark");
     })();
@@ -33,7 +34,7 @@
       <div class="flex items-center gap-2">
         <div class="w-9 h-9 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-lg shadow-md">N</div>
         <div>
-          <h1 class="text-xl md:text-2xl font-bold tracking-tight">NQA TECH</h1>
+          <h1 class="text-xl md:text-2xl font-bold tracking-tight"><a href="/">NQA TECH</a></h1>
           <p class="text-xs text-slate-500 dark:text-slate-400 -mt-1">BMI & Tools Suite</p>
         </div>
       </div>
@@ -45,19 +46,17 @@
         <a href="https://nguyenquocanh.io.vn" target="_blank" class="ml-1 px-3 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700 shadow transition-all">Portfolio</a>
 
         <!-- Theme Toggle (cycles: light → dark → system → auto) -->
-        <!-- <button id="themeToggle" class="ml-2 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800 transition flex items-center gap-2"
+        <!--
+        <button id="themeToggle" class="ml-2 px-3 py-2 rounded-lg border border-slate-200 hover:bg-slate-100 dark:border-slate-700 dark:hover:bg-slate-800 transition flex items-center gap-2"
                 aria-label="Chuyển chế độ giao diện" title="Theme: System">
           <span id="themeLabel" class="text-xs hidden sm:inline">System</span>
           <span id="iconSun" class="theme-icon block dark:hidden" aria-hidden="true">🌞</span>
           <span id="iconMoon" class="theme-icon hidden dark:block" aria-hidden="true">🌙</span>
-        </button> -->
+        </button>
+        -->
       </nav>
     </div>
   </header>
-
-  <!-- <section class="max-w-6xl mx-auto px-4 pt-6 pb-2">
-    <p class="text-slate-600 dark:text-slate-400">Full page responsive. Code sạch, chạy thẳng file HTML. Theme: Light / Dark / System / Auto theo giờ.</p>
-  </section> -->
 
   <main class="max-w-6xl mx-auto px-4 pb-20 space-y-12">
 
@@ -65,7 +64,7 @@
     <section id="bmi" class="grid lg:grid-cols-2 gap-8 items-start">
       <!-- Calculator -->
       <div class="bg-white dark:bg-slate-900 rounded-2xl shadow-xl p-6 space-y-5">
-        <h2 class="text-xl font-semibold">BMI Calculator </h2>
+        <h2 class="text-xl font-semibold">BMI Calculator</h2>
 
         <div class="flex justify-between bg-slate-100 dark:bg-slate-800 rounded-full p-1">
           <label class="flex-1 text-center cursor-pointer">
@@ -78,10 +77,12 @@
           </label>
         </div>
 
+        <!-- DOB + error -->
         <div>
           <label for="birthdate" class="block text-sm font-medium mb-1">Ngày sinh (dd/mm/yyyy, tuỳ chọn)</label>
           <input id="birthdate" type="text" placeholder="dd/mm/yyyy"
                  class="w-full border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 rounded-lg p-2.5 focus:ring-2 focus:ring-blue-400 focus:outline-none" />
+          <p id="birthdateError" class="mt-1 text-sm text-red-600 hidden">Ngày sinh không hợp lệ.</p>
         </div>
 
         <div>
@@ -237,6 +238,7 @@
         <button id="genLinks" class="px-4 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white font-semibold">Generate</button>
         <button id="copyLinks" class="px-4 py-2 rounded-lg bg-slate-800 hover:bg-black text-white">Copy</button>
         <button id="downloadLinks" class="px-4 py-2 rounded-lg bg-green-600 hover:bg-green-700 text-white">Download .txt</button>
+        <button id="clearLinks" class="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 text-white">Clear</button>
         <span id="counter" class="text-sm text-slate-600 dark:text-slate-400 self-center hidden"></span>
       </div>
 
@@ -282,48 +284,97 @@
   </footer>
 
   <script>
-    // ===== THEME TOGGLE: Light / Dark / System / Auto =====
-    // const themeBtn = document.getElementById("themeToggle");
-    // const iconSun = document.getElementById("iconSun");
-    // const iconMoon = document.getElementById("iconMoon");
-    // const themeLabel = document.getElementById("themeLabel");
-    const birthdateInput = document.getElementById("birthdate");
-    // const modes = ["light", "dark", "system", "auto"];
-    let idx = 0;
+    // ===== CONSTANTS =====
+    const ALLOWED_MIN_YEAR = 1998;
+    const ALLOWED_MAX_YEAR = 2010;
+    const MAX_AGE = 26; // yêu cầu: tuổi ≤ 26
 
-    // format bithday input
-    birthdateInput.addEventListener("input", (e) => {
-      let v = e.target.value.replace(/[^\d]/g, "").slice(0,8);
-      if (v.length >= 5) v = v.slice(0,2) + "/" + v.slice(2,4) + "/" + v.slice(4);
-      else if (v.length >= 3) v = v.slice(0,2) + "/" + v.slice(2);
-      e.target.value = v;
+    // ===== UTILS =====
+    const $ = (id) => document.getElementById(id);
+
+    // ===== CLEAR LINKS BUTTON =====
+    const clearLinksButton = $("clearLinks");
+    clearLinksButton.addEventListener("click", () => {
+      $("linksOut").value = "";
+      $("counter").classList.add("hidden");
     });
-    // function applyTheme(mode) {
-    //   const root = document.documentElement;
-    //   const hour = new Date().getHours();
-    //   const sysDark = window.matchMedia("(prefers-color-scheme: dark)").matches;
-    //   let eff = mode;
-    //   if (mode === "auto") eff = (hour >= 6 && hour < 18) ? "light" : "dark";
-    //   if (mode === "system") eff = sysDark ? "dark" : "light";
-    //   if (eff === "dark") { root.classList.add("dark"); iconSun.classList.add("hide"); iconMoon.classList.remove("hide"); }
-    //   else { root.classList.remove("dark"); iconMoon.classList.add("hide"); iconSun.classList.remove("hide"); }
-    //   setTimeout(()=>{ iconSun.classList.remove("hide"); iconMoon.classList.remove("hide"); }, 150);
-    //   localStorage.setItem("theme-mode", mode);
-    //   themeBtn.title = "Theme: " + mode[0].toUpperCase() + mode.slice(1);
-    //   themeLabel.textContent = mode[0].toUpperCase() + mode.slice(1);
-    // }
-    // function cycleTheme(){ idx = (idx + 1) % modes.length; applyTheme(modes[idx]); }
-    // themeBtn.addEventListener("click", cycleTheme);
-    // const savedMode = localStorage.getItem("theme-mode") || "system";
-    // idx = Math.max(0, modes.indexOf(savedMode));
-    // applyTheme(modes[idx]);
-    // window.matchMedia("(prefers-color-scheme: dark)").addEventListener("change", () => {
-    //   if ((localStorage.getItem("theme-mode") || "system") === "system") applyTheme("system");
-    // });
+
+    // ===== DOB FORMAT + VALIDATE =====
+    const birthdateInput = $("birthdate");
+    const birthdateError = $("birthdateError");
+
+    function setBirthdateError(msg) {
+      if (msg) {
+        birthdateError.textContent = msg;
+        birthdateError.classList.remove("hidden");
+        birthdateInput.classList.add("border-red-500", "focus:ring-red-500");
+      } else {
+        birthdateError.classList.add("hidden");
+        birthdateInput.classList.remove("border-red-500", "focus:ring-red-500");
+      }
+    }
+
+    function parseDOB_ddmmyyyy(s) {
+      const m = /^(\d{2})\/(\d{2})\/(\d{4})$/.exec((s || "").trim());
+      if (!m) return null;
+
+      const d = parseInt(m[1], 10);
+      const M = parseInt(m[2], 10) - 1;
+      const Y = parseInt(m[3], 10);
+
+      // Năm sinh phải trong [1998..2010]
+      if (Y < ALLOWED_MIN_YEAR || Y > ALLOWED_MAX_YEAR) return null;
+
+      const dt = new Date(Y, M, d);
+      // Ngày-tháng hợp lệ
+      if (dt.getFullYear() !== Y || dt.getMonth() !== M || dt.getDate() !== d) return null;
+      // Không cho ngày tương lai
+      if (dt > new Date()) return null;
+
+      return dt;
+    }
+
+    function ageYears(dob) {
+      const now = new Date();
+      let y = now.getFullYear() - dob.getFullYear();
+      const m = now.getMonth() - dob.getMonth();
+      const dd = now.getDate() - dob.getDate();
+      if (m < 0 || (m === 0 && dd < 0)) y--;
+      return y;
+    }
+
+    function validateBirthdateRange() {
+      const raw = birthdateInput.value.trim();
+      if (!raw) { // DOB không bắt buộc; nếu muốn bắt buộc, đổi block này
+        setBirthdateError("");
+        return true;
+      }
+      const dob = parseDOB_ddmmyyyy(raw);
+      if (!dob) {
+        setBirthdateError(`Ngày sinh không hợp lệ hoặc ngoài khoảng năm ${ALLOWED_MIN_YEAR}–${ALLOWED_MAX_YEAR}.`);
+        return false;
+      }
+      const age = ageYears(dob);
+      if (age > MAX_AGE) {
+        setBirthdateError(`Tuổi phải ≤ ${MAX_AGE}.`);
+        return false;
+      }
+      setBirthdateError("");
+      return true;
+    }
+
+    // format birthday input → dd/mm/yyyy
+    birthdateInput.addEventListener("input", (e) => {
+      let v = e.target.value.replace(/[^\d]/g, "").slice(0, 8);
+      if (v.length >= 5) v = v.slice(0, 2) + "/" + v.slice(2, 4) + "/" + v.slice(4);
+      else if (v.length >= 3) v = v.slice(0, 2) + "/" + v.slice(2);
+      e.target.value = v;
+      if (v.length === 10) validateBirthdateRange();
+    });
+    birthdateInput.addEventListener("blur", validateBirthdateRange);
 
     // ===== BMI HELPERS =====
     const ERROR_DELTA = 0.2;
-    const $ = (id)=>document.getElementById(id);
     function classifyWHO(bmi) {
       if (bmi < 16) return {label: "Gầy độ 3", tone: "warn"};
       if (bmi < 17) return {label: "Gầy độ 2", tone: "warn"};
@@ -383,8 +434,14 @@
       ];
     }
 
-    // Calculate handler
+    // ===== Calculate handler =====
     $("calculateBMI").addEventListener("click", () => {
+      // DOB validate (cho phép trống; nếu có thì phải hợp lệ)
+      if (!validateBirthdateRange()) {
+        birthdateInput.focus();
+        return;
+      }
+
       const w = parseFloat($("weight").value);
       const hcm = parseFloat($("height").value);
       if (!w || !hcm) { alert("Nhập đủ cân nặng & chiều cao."); return; }
@@ -417,7 +474,7 @@
       // Needle
       $("bmiNeedle").style.left = `calc(${mapBMIToPercent(bmiRounded)}% - 8px)`;
 
-      // Age
+      // Age text (chỉ hiển thị nếu parse được)
       const dob = parseDOB($("birthdate").value);
       $("ageText").textContent = ageString(dob);
 
@@ -432,8 +489,7 @@
       // Advice
       $("adviceList").innerHTML = adviceList(who.label).map(x=>`<li>${x}</li>`).join("");
 
-      // Also show range (độ cận) bên dưới headline (optional)
-      // Append to bodyNote if muốn:
+      // Độ cận BMI
       $("bodyNote").innerHTML += ` <span class="block mt-1 text-xs opacity-80">Độ cận: [${low}, ${high}]</span>`;
 
       // Color card theo eligibility
